@@ -74,7 +74,14 @@ w_edge = linspace(0, 1, ops.ntbuff)';
 ntb = ops.ntbuff;
 datr_prev = gpuArray.zeros(ntb, ops.Nchan, 'single');
 
+h = waitbar(0,'Starting');
+
+new_Nbatch=Nbatch;
+deleted_batches=[];
 for ibatch = 1:Nbatch
+    
+    waitbar(ibatch / Nbatch, h,sprintf('Progress: %d %%', floor(ibatch/Nbatch*100)))
+    
     % we'll create a binary file of batches of NT samples, which overlap consecutively on ops.ntbuff samples
     % in addition to that, we'll read another ops.ntbuff samples from before and after, to have as buffers for filtering
     offset = max(0, ops.twind + 2*NchanTOT*(NT * (ibatch-1) - ntb)); % number of samples to start reading at.
@@ -100,22 +107,33 @@ for ibatch = 1:Nbatch
     datr(ntb + [1:ntb], :) = w_edge .* datr(ntb + [1:ntb], :) +...
         (1 - w_edge) .* datr_prev;
    
-    datr_prev = datr(ntb +NT + [1:ops.ntbuff], :);
+    datr_prev = datr(ntb +NT + [1:ntb], :);
     datr    = datr(ntb + (1:NT),:); % remove timepoints used as buffers
    
     datr    = datr * Wrot; % whiten the data and scale by 200 for int16 range
 
     datcpu  = gather(int16(datr')); % convert to int16, and gather on the CPU side
-    count = fwrite(fidW, datcpu, 'int16'); % write this batch to binary file
+    
+    
+   if sum(std(double(diff(buff'))')==0)>0 & ibatch~=1 & ibatch~=Nbatch           
+        new_Nbatch=new_Nbatch-1;
+        deleted_batches=vertcat(deleted_batches,ibatch);
+   else
+        count = fwrite(fidW, datcpu, 'int16'); % write this batch to binary file
+   end
+       
     if count~=numel(datcpu)
         error('Error writing batch %g to %s. Check available disk space.',ibatch,ops.fproc);
     end
 end
+close(h)
 fclose(fidW); % close the files
 fclose(fid);
 
 rez.Wrot    = gather(Wrot); % gather the whitening matrix as a CPU variable
 
-fprintf('Time %3.0fs. Finished preprocessing %d batches. \n', toc, Nbatch);
+fprintf('Time %3.0fs. Finished preprocessing %d/%d batches. \n', toc, new_Nbatch, Nbatch);
 
-rez.temp.Nbatch = Nbatch;
+rez.ops.deleted_batches=deleted_batches;
+rez.ops.Nbatch = new_Nbatch;
+rez.temp.Nbatch = new_Nbatch;
