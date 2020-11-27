@@ -66,7 +66,7 @@ if fid<3
 end
 fidW        = fopen(ops.fproc,   'w+'); % open for writing processed data
 if fidW<3
-    error('Could not open %s for writing.',ops.fproc);    
+    error('Could not open %s for writing.',ops.fproc);
 end
 
 % weights to combine batches at the edge
@@ -76,8 +76,6 @@ datr_prev = gpuArray.zeros(ntb, ops.Nchan, 'single');
 
 h = waitbar(0,'Starting');
 
-new_Nbatch=Nbatch;
-deleted_batches=[];
 for ibatch = 1:Nbatch
     
     waitbar(ibatch / Nbatch, h,sprintf('Progress: %d %%', floor(ibatch/Nbatch*100)))
@@ -87,7 +85,7 @@ for ibatch = 1:Nbatch
     offset = max(0, ops.twind + 2*NchanTOT*(NT * (ibatch-1) - ntb)); % number of samples to start reading at.
     
     fseek(fid, offset, 'bof'); % fseek to batch start in raw file
-
+    
     buff = fread(fid, [NchanTOT NTbuff], '*int16'); % read and reshape. Assumes int16 data (which should perhaps change to an option)
     if isempty(buff)
         break; % this shouldn't really happen, unless we counted data batches wrong
@@ -103,22 +101,20 @@ for ibatch = 1:Nbatch
     
     datr    = gpufilter(buff, ops, chanMap); % apply filters and median subtraction
     
-%     datr(ntb + [1:ntb], :) = datr_prev;
+    %     datr(ntb + [1:ntb], :) = datr_prev;
     datr(ntb + [1:ntb], :) = w_edge .* datr(ntb + [1:ntb], :) +...
         (1 - w_edge) .* datr_prev;
-   
+    
     datr_prev = datr(ntb +NT + [1:ntb], :);
     datr    = datr(ntb + (1:NT),:); % remove timepoints used as buffers
-   
+    
     datr    = datr * Wrot; % whiten the data and scale by 200 for int16 range
-
+    
     datcpu  = gather(int16(datr')); % convert to int16, and gather on the CPU side
     
+    count = fwrite(fidW, datcpu, 'int16'); % write this batch to binary file
     
-  
-        count = fwrite(fidW, datcpu, 'int16'); % write this batch to binary file
-  
-       
+    
     if count~=numel(datcpu)
         error('Error writing batch %g to %s. Check available disk space.',ibatch,ops.fproc);
     end
@@ -127,5 +123,5 @@ close(h)
 fclose(fidW); % close the files
 fclose(fid);
 
-fprintf('Time %3.0fs. Finished preprocessing %d/%d batches. \n', toc, new_Nbatch, Nbatch);
+fprintf('Time %3.0fs. Finished preprocessing %d batches. \n', toc, Nbatch);
 

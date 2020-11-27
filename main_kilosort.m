@@ -2,7 +2,7 @@
 
 addpath(genpath('C:\Users\Recording\Documents\GitHub\KiloSort')) % path to kilosort folder
 addpath('C:\Users\Recording\Documents\GitHub\npy-matlab') % for converting to Phy
-rootZ = 'F:\ecephys_output\GG_M608__g0_t34,34\catgt_GG_M608__g0\GG_M608__g0_imec0_test'; % the raw data binary file is in this folder
+rootZ = 'F:\ecephys_output\GG_M608__g0_t34,36\catgt_GG_M608__g0\GG_M608__g0_imec0'; % the raw data binary file is in this folder
 rootH = 'E:\kilosort_temp'; % path to temporary binary file (same size as data, should be on fast SSD)
 pathToYourConfigFile = 'C:\Users\Recording\Documents\GitHub\KiloSort\configFiles'; % take from Github folder and put it somewhere else (together with the master_file)
 chanMapFile = 'neuropixPhase3B2_kilosortChanMap.mat';

@@ -115,7 +115,7 @@ for ibatch = 1:Nbatch
     datcpu  = gather(int16(datr')); % convert to int16, and gather on the CPU side
     
     
-   if sum(std(double(diff(buff'))')==0)>0 & ibatch~=1 & ibatch~=Nbatch           
+   if sum(std(double(diff(buff'))')==0)>0 & ibatch~=1 & ibatch~=Nbatch       
         new_Nbatch=new_Nbatch-1;
         deleted_batches=vertcat(deleted_batches,ibatch);
    else
