@@ -63,6 +63,8 @@ fprintf('found %d good units \n', sum(rez.good>0))
 
 rez=correct_time(rez);
 
+rewrite_temp_wh(rez.ops)
+
 % write to Phy
 fprintf('Saving results to Phy  \n')
 rezToPhy(rez, rootZ);
