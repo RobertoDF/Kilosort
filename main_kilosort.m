@@ -1,8 +1,10 @@
 %% you need to change most of the paths in this block
 
 addpath(genpath('C:\Users\Recording\Documents\GitHub\KiloSort')) % path to kilosort folder
-addpath('C:\Users\Recording\Documents\GitHub\npy-matlab') % for converting to Phy
-rootZ = 'F:\ecephys_output\GG_M608__g0_t34,36\catgt_GG_M608__g0\GG_M608__g0_imec0'; % the raw data binary file is in this folder
+
+addpath(genpath('C:\Users\Recording\Documents\GitHub\npy-matlab')) % for converting to Phy
+rootZ = 'F:\ecephys_output\GG_M608__g0_t35,38\catgt_GG_M608__g0\GG_M608__g0_imec0'; % the raw data binary file is in this folder
+
 rootH = 'E:\kilosort_temp'; % path to temporary binary file (same size as data, should be on fast SSD)
 pathToYourConfigFile = 'C:\Users\Recording\Documents\GitHub\KiloSort\configFiles'; % take from Github folder and put it somewhere else (together with the master_file)
 chanMapFile = 'neuropixPhase3B2_kilosortChanMap.mat';
@@ -11,7 +13,7 @@ ops.trange    = [0 Inf]; % time range to sort
 ops.NchanTOT  = 385; % total number of channels in your recording
 
 run(fullfile(pathToYourConfigFile, 'configFile384.m'))
-ops.fproc   = fullfile(rootH, 'temp_wh_2.dat'); % proc file on a fast SSD
+ops.fproc   = fullfile(rootH, 'temp_wh.dat'); % proc file on a fast SSD
 ops.chanMap = fullfile(pathToYourConfigFile, chanMapFile);
 
 %% this block runs all the steps of the algorithm
@@ -61,7 +63,7 @@ rez.good = get_good_units(rez);
 
 fprintf('found %d good units \n', sum(rez.good>0))
 
-rez=correct_time(rez);
+rez = correct_time(rez);
 
 rewrite_temp_wh(ops)
 

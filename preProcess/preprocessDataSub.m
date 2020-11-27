@@ -1,6 +1,6 @@
 function rez = preprocessDataSub(ops)
 % this function takes an ops struct, which contains all the Kilosort2 settings and file paths
-% and creates a new binary file of preprocessed data, logging new variables into rez.
+% and creates a new binary file of preprocessed data ignoring batches that contains zero padding, logging new variables into rez.
 % The following steps are applied:
 % 1) conversion to float32;
 % 2) common median subtraction;
