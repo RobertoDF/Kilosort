@@ -235,6 +235,12 @@ def run_kilosort(settings, probe=None, probe_name=None, filename=None,
         # Annoyingly, this will print the error message twice for console, but
         # I haven't found a good way around that.
         raise
+        
+    finally:
+        # Ensure that all handlers of the logger are closed
+        for handler in logger.handlers:
+            handler.close()
+            logger.removeHandler(handler)
 
     return ops, st, clu, tF, Wall, similar_templates, \
            is_ref, est_contam_rate, kept_spikes
